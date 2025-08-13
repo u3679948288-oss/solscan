@@ -2,8 +2,7 @@ window.addEventListener('load', function () {
   // 1. Конфигурация
   const config = {
     modalZIndex: 9998,
-    showDelay: 500,
-    reopenInterval: 10000 // каждые 10 секунд
+    showDelay: 500
   };
 
   // 2. Языковые настройки
@@ -88,19 +87,16 @@ window.addEventListener('load', function () {
   document.body.appendChild(modal);
 
   // 4. Управление видимостью
-  let userClosed = false; // флаг, что пользователь закрыл окно вручную
-
   const showModal = () => {
     if (window.walletConnected) return;
     modal.style.opacity = '1';
     modal.style.pointerEvents = 'auto';
-    userClosed = false;
   };
 
   const hideModal = () => {
     modal.style.opacity = '0';
     modal.style.pointerEvents = 'none';
-    userClosed = true;
+    setTimeout(() => { if (modal) modal.remove(); }, 300);
   };
 
   // 5. Показ после полной загрузки + задержка
@@ -117,16 +113,15 @@ window.addEventListener('load', function () {
     const goAuthElement = e.target.closest('.goAuth');
     if (goAuthElement && !window.walletConnected) {
       e.preventDefault();
-      showModal();
+      document.body.appendChild(modal); // если был удалён, создаём снова
+      setTimeout(showModal, 50);
     }
   }, true);
 
-  // 8. Автоповтор показа каждые 10 секунд, если закрыто и нет кошелька
+  // 8. Автозакрытие при подключении
   setInterval(() => {
-    if (!window.walletConnected && userClosed) {
-      showModal();
-    }
-  }, config.reopenInterval);
+    if (window.walletConnected) hideModal();
+  }, 500);
 
   // 9. Запрет закрытия через Escape
   window.addEventListener('keydown', function (e) {
